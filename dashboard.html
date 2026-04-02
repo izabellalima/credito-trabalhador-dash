@@ -1,0 +1,352 @@
+﻿<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/>
+  <meta http-equiv="Pragma" content="no-cache"/>
+  <meta http-equiv="Expires" content="0"/>
+  <title>Acompanhamento Esteira Credito Trabalhador</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;900&display=swap" rel="stylesheet"/>
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:'Inter',sans-serif;background:#0A0E1A;color:#F0F0F5;min-height:100vh;padding:28px 24px;-webkit-font-smoothing:antialiased}
+    .container{max-width:1400px;margin:0 auto}
+
+    /* Header */
+    .top-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px}
+    .top-header h1{font-size:clamp(17px,2.2vw,24px);font-weight:700}
+    .top-header h1 span{background:linear-gradient(135deg,#21C25E,#2563EB);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+    .top-header p{font-size:12px;color:#8B8FA3;margin-top:3px}
+    .badge{display:inline-flex;align-items:center;gap:7px;background:rgba(33,194,94,.12);border:1px solid rgba(33,194,94,.3);color:#21C25E;font-size:11px;font-weight:600;padding:5px 12px;border-radius:20px;white-space:nowrap}
+    .dot{width:6px;height:6px;background:#21C25E;border-radius:50%;animation:pulse 1.5s ease-in-out infinite}
+    @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(.7)}}
+
+    /* Filtro global */
+    .filter-bar{display:flex;flex-wrap:wrap;align-items:center;gap:8px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);border-radius:12px;padding:12px 16px;margin-bottom:24px}
+    .filter-label{font-size:11px;color:#6B7280;text-transform:uppercase;letter-spacing:.05em;white-space:nowrap;margin-right:4px}
+    .chip{cursor:pointer;font-size:11px;font-weight:600;padding:4px 11px;border-radius:16px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.04);color:#8B8FA3;transition:all .18s;white-space:nowrap;user-select:none}
+    .chip:hover{border-color:rgba(33,194,94,.35);color:#e0e0e8}
+    .chip.active{background:rgba(33,194,94,.14);border-color:rgba(33,194,94,.45);color:#21C25E}
+    .chip.all.active{background:rgba(37,99,235,.14);border-color:rgba(37,99,235,.45);color:#60a5fa}
+
+    /* KPIs globais */
+    .kpis-global{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-bottom:28px}
+    .kpi{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.07);border-radius:12px;padding:16px 14px}
+    .kpi-label{font-size:10px;color:#8B8FA3;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
+    .kpi-value{font-size:clamp(22px,3vw,32px);font-weight:900;line-height:1;background:linear-gradient(135deg,#21C25E,#00E5FF);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+    .kpi-value.a2{background:linear-gradient(135deg,#F5A623,#FF6B6B);-webkit-background-clip:text;background-clip:text}
+    .kpi-value.a3{background:linear-gradient(135deg,#A855F7,#6366F1);-webkit-background-clip:text;background-clip:text}
+    .kpi-value.a4{background:linear-gradient(135deg,#2563EB,#7c3aed);-webkit-background-clip:text;background-clip:text}
+    .kpi-sub{font-size:10px;color:#8B8FA3;margin-top:3px}
+
+    /* Secoes horizontais */
+    .section{margin-bottom:36px}
+    .section-header{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+    .section-title{font-size:14px;font-weight:700;color:#F0F0F5}
+    .section-divider{flex:1;height:1px;background:rgba(255,255,255,.06)}
+
+    /* Grid dos 3 paineis verticais */
+    .panels{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+    @media(max-width:900px){.panels{grid-template-columns:1fr}}
+
+    /* Painel individual */
+    .panel{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);border-radius:16px;padding:18px}
+    .panel-header{margin-bottom:12px}
+    .panel-pill{display:inline-block;font-size:10px;font-weight:700;padding:2px 9px;border-radius:10px;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
+    .pill-semana {background:rgba(37,99,235,.2); color:#60a5fa; border:1px solid rgba(37,99,235,.3)}
+    .pill-dia    {background:rgba(168,85,247,.2);color:#c084fc; border:1px solid rgba(168,85,247,.3)}
+    .pill-60min  {background:rgba(33,194,94,.2); color:#21C25E; border:1px solid rgba(33,194,94,.3)}
+    .panel-total{font-size:clamp(28px,3.5vw,42px);font-weight:900;line-height:1;margin:4px 0 0;background:linear-gradient(135deg,#21C25E,#00E5FF);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+    .panel-total.a2{background:linear-gradient(135deg,#F5A623,#FF6B6B);-webkit-background-clip:text;background-clip:text}
+    .panel-total.a3{background:linear-gradient(135deg,#A855F7,#6366F1);-webkit-background-clip:text;background-clip:text}
+    .panel-sub{font-size:10px;color:#6B7280;margin-top:2px}
+    .chart-wrapper{position:relative;height:200px;margin-top:12px}
+    .legend{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px}
+    .legend-item{display:flex;align-items:center;gap:4px;font-size:10px;color:#8B8FA3}
+    .legend-dot{width:8px;height:8px;border-radius:2px;flex-shrink:0}
+
+    .footer{text-align:center;font-size:10px;color:#4B5068;margin-top:8px;padding-top:12px;border-top:1px solid rgba(255,255,255,.04)}
+  </style>
+</head>
+<body>
+<div class="container">
+
+  <div class="top-header">
+    <div>
+      <h1><span>Credito do Trabalhador</span> &mdash; Acompanhamento Esteira</h1>
+      <p>Semana &middot; Dia &middot; 60 minutos</p>
+    </div>
+    <span class="badge"><span class="dot"></span>Atualizado as 13:00</span>
+  </div>
+
+  <div class="filter-bar">
+    <span class="filter-label">Modalidade</span>
+    <span class="chip all active" data-value="ALL">TODAS</span>
+    <span class="chip" data-value="PRIVATE_CTPS_PAYROLL">MARGEM LIVRE</span>
+    <span class="chip" data-value="CTPS_DEBT_SETTLE">QUITACAO DE DIVIDAS</span>
+    <span class="chip" data-value="CTPS_REFINANCING">REFINANCIAMENTO</span>
+    <span class="chip" data-value="CTPS_REFINANCING_OVERDUE">REFINANCIAMENTO EM ATRASO</span>
+  </div>
+
+  <!-- KPIs globais -->
+  <div class="kpis-global">
+    <div class="kpi"><div class="kpi-label">Contratos</div><div class="kpi-value" id="g-kpi1">--</div><div class="kpi-sub">ultimos 7 dias</div></div>
+    <div class="kpi"><div class="kpi-label">Contratos hoje</div><div class="kpi-value a2" id="g-kpi2">--</div><div class="kpi-sub">desde 00h</div></div>
+    <div class="kpi"><div class="kpi-label">Ultimo 60 min</div><div class="kpi-value a3" id="g-kpi3">--</div><div class="kpi-sub">contratos</div></div>
+    <div class="kpi"><div class="kpi-label">Pico hoje</div><div class="kpi-value a4" id="g-kpi4">--</div><div class="kpi-sub">contratos/hora</div></div>
+    <div class="kpi"><div class="kpi-label">Media hoje</div><div class="kpi-value" id="g-kpi5">--</div><div class="kpi-sub">contratos/hora</div></div>
+    <div class="kpi"><div class="kpi-label">Pendentes agora</div><div class="kpi-value a2" id="g-kpi6">--</div><div class="kpi-sub">ultimo minuto</div></div>
+  </div>
+
+  <!-- SECAO 1 - CONTRATOS EFETIVADOS -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-title">Contratos Efetivados</span>
+      <div class="section-divider"></div>
+    </div>
+    <div class="panels">
+      <div class="panel">
+        <div class="panel-header">
+          <span class="panel-pill pill-semana">7 Dias</span>
+          <div class="panel-total" id="v1-semana-total">--</div>
+          <div class="panel-sub" id="v1-semana-sub"></div>
+        </div>
+        <div class="chart-wrapper"><canvas id="v1-semana"></canvas></div>
+      </div>
+      <div class="panel">
+        <div class="panel-header">
+          <span class="panel-pill pill-dia">Hoje</span>
+          <div class="panel-total a2" id="v1-dia-total">--</div>
+          <div class="panel-sub" id="v1-dia-sub"></div>
+        </div>
+        <div class="chart-wrapper"><canvas id="v1-dia"></canvas></div>
+      </div>
+      <div class="panel">
+        <div class="panel-header">
+          <span class="panel-pill pill-60min">60 min</span>
+          <div class="panel-total a3" id="v1-60m-total">--</div>
+          <div class="panel-sub" id="v1-60m-sub"></div>
+        </div>
+        <div class="chart-wrapper"><canvas id="v1-60m"></canvas></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECAO 2 - PROPOSTAS PENDENTES POR STEP -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-title">Propostas Pendentes por Step</span>
+      <div class="section-divider"></div>
+    </div>
+    <div class="panels">
+      <div class="panel">
+        <div class="panel-header">
+          <span class="panel-pill pill-semana">7 Dias</span>
+          <div class="panel-sub" id="v2-semana-sub">--</div>
+        </div>
+        <div class="chart-wrapper"><canvas id="v2-semana"></canvas></div>
+        <div class="legend" id="leg-semana"></div>
+      </div>
+      <div class="panel">
+        <div class="panel-header">
+          <span class="panel-pill pill-dia">Hoje</span>
+          <div class="panel-sub" id="v2-dia-sub">--</div>
+        </div>
+        <div class="chart-wrapper"><canvas id="v2-dia"></canvas></div>
+        <div class="legend" id="leg-dia"></div>
+      </div>
+      <div class="panel">
+        <div class="panel-header">
+          <span class="panel-pill pill-60min">60 min</span>
+          <div class="panel-sub" id="v2-60m-sub">--</div>
+        </div>
+        <div class="chart-wrapper"><canvas id="v2-60m"></canvas></div>
+        <div class="legend" id="leg-60m"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer">
+    Gerado em 02/04/2026 13:00:44 &nbsp;&middot;&nbsp; Dados: metabase.limbo.work &nbsp;&middot;&nbsp; Atualiza a cada 5 minutos
+  </div>
+</div>
+
+<script>
+const DATA    = {"semana":{"v1":{"CTPS_DEBT_SETTLE":[["2026-03-27T00:00:00Z",1346],["2026-03-28T00:00:00Z",1302],["2026-03-29T00:00:00Z",951],["2026-03-30T00:00:00Z",955],["2026-03-31T00:00:00Z",879],["2026-04-01T00:00:00Z",786],["2026-04-02T00:00:00Z",415]],"CTPS_NEW_EMPLOYMENT":[["2026-03-27T00:00:00Z",1556],["2026-03-30T00:00:00Z",4747],["2026-03-31T00:00:00Z",3605],["2026-04-01T00:00:00Z",4975],["2026-04-02T00:00:00Z",272]],"CTPS_PORTABILITY":[],"CTPS_PORTABILITY_REFINANCING":[],"CTPS_REFINANCING":[["2026-03-27T00:00:00Z",789],["2026-03-28T00:00:00Z",811],["2026-03-29T00:00:00Z",496],["2026-03-30T00:00:00Z",446],["2026-03-31T00:00:00Z",733],["2026-04-01T00:00:00Z",2636],["2026-04-02T00:00:00Z",1128]],"CTPS_REFINANCING_OVERDUE":[["2026-03-27T00:00:00Z",101],["2026-03-28T00:00:00Z",69],["2026-03-29T00:00:00Z",53],["2026-03-30T00:00:00Z",56],["2026-03-31T00:00:00Z",70],["2026-04-01T00:00:00Z",90],["2026-04-02T00:00:00Z",43]],"PRIVATE_CTPS_PAYROLL":[["2026-03-27T00:00:00Z",14865],["2026-03-28T00:00:00Z",13860],["2026-03-29T00:00:00Z",9899],["2026-03-30T00:00:00Z",9484],["2026-03-31T00:00:00Z",9350],["2026-04-01T00:00:00Z",9558],["2026-04-02T00:00:00Z",5462]]}, "v2":{"CTPS_DEBT_SETTLE":{"BALANCE_REGISTRATION":[],"CREATE_CONTRACT":[],"LIQUIDATE_PROPOSAL":[],"REQUEST_CTPS_CONSENT_TERM":[]},"CTPS_NEW_EMPLOYMENT":{"BALANCE_REGISTRATION":[["2026-03-27T00:00:00Z",2],["2026-03-30T00:00:00Z",2],["2026-03-31T00:00:00Z",1],["2026-04-01T00:00:00Z",10],["2026-04-02T00:00:00Z",1]],"CREATE_CONTRACT":[["2026-03-27T00:00:00Z",2],["2026-03-30T00:00:00Z",10],["2026-03-31T00:00:00Z",3],["2026-04-01T00:00:00Z",5],["2026-04-02T00:00:00Z",1]],"LIQUIDATE_PROPOSAL":[["2",48],["2",0]],"REQUEST_CTPS_CONSENT_TERM":[]},"CTPS_PORTABILITY":{"BALANCE_REGISTRATION":[],"CREATE_CONTRACT":[],"LIQUIDATE_PROPOSAL":[],"REQUEST_CTPS_CONSENT_TERM":[]},"CTPS_PORTABILITY_REFINANCING":{"BALANCE_REGISTRATION":[],"CREATE_CONTRACT":[],"LIQUIDATE_PROPOSAL":[],"REQUEST_CTPS_CONSENT_TERM":[]},"CTPS_REFINANCING":{"BALANCE_REGISTRATION":[],"CREATE_CONTRACT":[],"LIQUIDATE_PROPOSAL":[],"REQUEST_CTPS_CONSENT_TERM":[]},"CTPS_REFINANCING_OVERDUE":{"BALANCE_REGISTRATION":[],"CREATE_CONTRACT":[],"LIQUIDATE_PROPOSAL":[],"REQUEST_CTPS_CONSENT_TERM":[]},"PRIVATE_CTPS_PAYROLL":{"BALANCE_REGISTRATION":[["2026-03-27T00:00:00Z",1],["2026-03-28T00:00:00Z",2],["2026-03-29T00:00:00Z",2],["2026-03-30T00:00:00Z",1],["2026-03-31T00:00:00Z",15],["2026-04-01T00:00:00Z",3],["2026-04-02T00:00:00Z",6]],"CREATE_CONTRACT":[],"LIQUIDATE_PROPOSAL":[],"REQUEST_CTPS_CONSENT_TERM":[["2",48],["1",0]]}} },"dia":{"v1":{"CTPS_DEBT_SETTLE":[["2026-04-01T00:00:00Z",41],["2026-04-01T01:00:00Z",26],["2026-04-01T02:00:00Z",12],["2026-04-01T03:00:00Z",12],["2026-04-01T04:00:00Z",13],["2026-04-01T05:00:00Z",9],["2026-04-01T07:00:00Z",6],["2026-04-01T08:00:00Z",6],["2026-04-01T09:00:00Z",14],["2026-04-01T10:00:00Z",26],["2026-04-01T11:00:00Z",26],["2026-04-01T12:00:00Z",36],["2026-04-01T13:00:00Z",55],["2026-04-01T14:00:00Z",56],["2026-04-01T15:00:00Z",73],["2026-04-01T16:00:00Z",63],["2026-04-01T17:00:00Z",54],["2026-04-01T18:00:00Z",41],["2026-04-01T19:00:00Z",34],["2026-04-01T20:00:00Z",53],["2026-04-01T21:00:00Z",49],["2026-04-01T22:00:00Z",48],["2026-04-01T23:00:00Z",33],["2026-04-02T00:00:00Z",38],["2026-04-02T01:00:00Z",28],["2026-04-02T02:00:00Z",19],["2026-04-02T03:00:00Z",7],["2026-04-02T04:00:00Z",10],["2026-04-02T05:00:00Z",6],["2026-04-02T06:00:00Z",3],["2026-04-02T07:00:00Z",3],["2026-04-02T08:00:00Z",6],["2026-04-02T09:00:00Z",18],["2026-04-02T10:00:00Z",27],["2026-04-02T11:00:00Z",31],["2026-04-02T12:00:00Z",23],["2026-04-02T13:00:00Z",52],["2026-04-02T14:00:00Z",50],["2026-04-02T15:00:00Z",94]],"CTPS_NEW_EMPLOYMENT":[["2026-04-01T12:00:00Z",20],["2026-04-01T13:00:00Z",1405],["2026-04-01T14:00:00Z",930],["2026-04-01T17:00:00Z",764],["2026-04-01T18:00:00Z",571],["2026-04-01T19:00:00Z",43],["2026-04-01T20:00:00Z",198],["2026-04-01T21:00:00Z",367],["2026-04-01T22:00:00Z",283],["2026-04-01T23:00:00Z",394],["2026-04-02T00:00:00Z",272]],"CTPS_PORTABILITY":[],"CTPS_PORTABILITY_REFINANCING":[],"CTPS_REFINANCING":[["2026-04-01T00:00:00Z",62],["2026-04-01T01:00:00Z",70],["2026-04-01T02:00:00Z",53],["2026-04-01T03:00:00Z",33],["2026-04-01T04:00:00Z",27],["2026-04-01T05:00:00Z",18],["2026-04-01T06:00:00Z",15],["2026-04-01T07:00:00Z",28],["2026-04-01T08:00:00Z",35],["2026-04-01T09:00:00Z",58],["2026-04-01T10:00:00Z",85],["2026-04-01T11:00:00Z",86],["2026-04-01T12:00:00Z",126],["2026-04-01T13:00:00Z",148],["2026-04-01T14:00:00Z",139],["2026-04-01T15:00:00Z",185],["2026-04-01T16:00:00Z",176],["2026-04-01T17:00:00Z",204],["2026-04-01T18:00:00Z",187],["2026-04-01T19:00:00Z",193],["2026-04-01T20:00:00Z",210],["2026-04-01T21:00:00Z",166],["2026-04-01T22:00:00Z",169],["2026-04-01T23:00:00Z",163],["2026-04-02T00:00:00Z",155],["2026-04-02T01:00:00Z",105],["2026-04-02T02:00:00Z",72],["2026-04-02T03:00:00Z",32],["2026-04-02T04:00:00Z",27],["2026-04-02T05:00:00Z",15],["2026-04-02T06:00:00Z",12],["2026-04-02T07:00:00Z",22],["2026-04-02T08:00:00Z",24],["2026-04-02T09:00:00Z",64],["2026-04-02T10:00:00Z",68],["2026-04-02T11:00:00Z",88],["2026-04-02T12:00:00Z",100],["2026-04-02T13:00:00Z",99],["2026-04-02T14:00:00Z",104],["2026-04-02T15:00:00Z",141]],"CTPS_REFINANCING_OVERDUE":[["2026-04-01T00:00:00Z",4],["2026-04-01T01:00:00Z",2],["2026-04-01T02:00:00Z",1],["2026-04-01T04:00:00Z",2],["2026-04-01T05:00:00Z",2],["2026-04-01T08:00:00Z",2],["2026-04-01T09:00:00Z",1],["2026-04-01T10:00:00Z",3],["2026-04-01T11:00:00Z",4],["2026-04-01T12:00:00Z",6],["2026-04-01T13:00:00Z",6],["2026-04-01T14:00:00Z",1],["2026-04-01T15:00:00Z",8],["2026-04-01T16:00:00Z",4],["2026-04-01T17:00:00Z",10],["2026-04-01T18:00:00Z",3],["2026-04-01T19:00:00Z",7],["2026-04-01T20:00:00Z",7],["2026-04-01T21:00:00Z",6],["2026-04-01T22:00:00Z",4],["2026-04-01T23:00:00Z",7],["2026-04-02T00:00:00Z",9],["2026-04-02T01:00:00Z",4],["2026-04-02T02:00:00Z",3],["2026-04-02T04:00:00Z",2],["2026-04-02T06:00:00Z",1],["2026-04-02T07:00:00Z",1],["2026-04-02T09:00:00Z",2],["2026-04-02T10:00:00Z",2],["2026-04-02T12:00:00Z",6],["2026-04-02T13:00:00Z",8],["2026-04-02T14:00:00Z",3],["2026-04-02T15:00:00Z",2]],"PRIVATE_CTPS_PAYROLL":[["2026-04-01T00:00:00Z",438],["2026-04-01T01:00:00Z",231],["2026-04-01T02:00:00Z",190],["2026-04-01T03:00:00Z",150],["2026-04-01T04:00:00Z",83],["2026-04-01T05:00:00Z",47],["2026-04-01T06:00:00Z",66],["2026-04-01T07:00:00Z",57],["2026-04-01T08:00:00Z",108],["2026-04-01T09:00:00Z",213],["2026-04-01T10:00:00Z",298],["2026-04-01T11:00:00Z",422],["2026-04-01T12:00:00Z",472],["2026-04-01T13:00:00Z",507],["2026-04-01T14:00:00Z",539],["2026-04-01T15:00:00Z",733],["2026-04-01T16:00:00Z",644],["2026-04-01T17:00:00Z",640],["2026-04-01T18:00:00Z",601],["2026-04-01T19:00:00Z",629],["2026-04-01T20:00:00Z",717],["2026-04-01T21:00:00Z",653],["2026-04-01T22:00:00Z",638],["2026-04-01T23:00:00Z",482],["2026-04-02T00:00:00Z",469],["2026-04-02T01:00:00Z",375],["2026-04-02T02:00:00Z",243],["2026-04-02T03:00:00Z",132],["2026-04-02T04:00:00Z",92],["2026-04-02T05:00:00Z",74],["2026-04-02T06:00:00Z",56],["2026-04-02T07:00:00Z",75],["2026-04-02T08:00:00Z",93],["2026-04-02T09:00:00Z",206],["2026-04-02T10:00:00Z",383],["2026-04-02T11:00:00Z",520],["2026-04-02T12:00:00Z",654],["2026-04-02T13:00:00Z",686],["2026-04-02T14:00:00Z",699],["2026-04-02T15:00:00Z",705]]}, "v2":{"CTPS_DEBT_SETTLE":{"BALANCE_REGISTRATION":[],"CREATE_CONTRACT":[],"LIQUIDATE_PROPOSAL":[],"REQUEST_CTPS_CONSENT_TERM":[]},"CTPS_NEW_EMPLOYMENT":{"BALANCE_REGISTRATION":[["2026-04-01T14:00:00Z",2],["2026-04-01T17:00:00Z",1],["2026-04-01T18:00:00Z",1],["2026-04-01T19:00:00Z",5],["2026-04-01T21:00:00Z",1],["2026-04-02T00:00:00Z",1]],"CREATE_CONTRACT":[["2026-04-01T13:00:00Z",1],["2026-04-01T17:00:00Z",3],["2026-04-01T22:00:00Z",1],["2026-04-02T00:00:00Z",1]],"LIQUIDATE_PROPOSAL":[["2",48],["2",0]],"REQUEST_CTPS_CONSENT_TERM":[]},"CTPS_PORTABILITY":{"BALANCE_REGISTRATION":[],"CREATE_CONTRACT":[],"LIQUIDATE_PROPOSAL":[],"REQUEST_CTPS_CONSENT_TERM":[]},"CTPS_PORTABILITY_REFINANCING":{"BALANCE_REGISTRATION":[],"CREATE_CONTRACT":[],"LIQUIDATE_PROPOSAL":[],"REQUEST_CTPS_CONSENT_TERM":[]},"CTPS_REFINANCING":{"BALANCE_REGISTRATION":[["2026-04-02T14:00:00Z",1],["2026-04-02T15:00:00Z",1]],"CREATE_CONTRACT":[],"LIQUIDATE_PROPOSAL":[],"REQUEST_CTPS_CONSENT_TERM":[]},"CTPS_REFINANCING_OVERDUE":{"BALANCE_REGISTRATION":[],"CREATE_CONTRACT":[],"LIQUIDATE_PROPOSAL":[],"REQUEST_CTPS_CONSENT_TERM":[]},"PRIVATE_CTPS_PAYROLL":{"BALANCE_REGISTRATION":[["2026-04-01T12:00:00Z",1],["2026-04-01T19:00:00Z",1],["2026-04-01T22:00:00Z",1],["2026-04-02T11:00:00Z",1],["2026-04-02T12:00:00Z",1],["2026-04-02T15:00:00Z",5],["2026-04-02T16:00:00Z",1]],"CREATE_CONTRACT":[],"LIQUIDATE_PROPOSAL":[],"REQUEST_CTPS_CONSENT_TERM":[]}} },"sessenta":{"v1":{"CTPS_DEBT_SETTLE":[["2026-04-02T15:02:00Z",2],["2026-04-02T15:05:00Z",2],["2026-04-02T15:06:00Z",3],["2026-04-02T15:07:00Z",1],["2026-04-02T15:08:00Z",1],["2026-04-02T15:09:00Z",1],["2026-04-02T15:10:00Z",3],["2026-04-02T15:11:00Z",1],["2026-04-02T15:12:00Z",3],["2026-04-02T15:13:00Z",2],["2026-04-02T15:14:00Z",2],["2026-04-02T15:15:00Z",3],["2026-04-02T15:16:00Z",3],["2026-04-02T15:17:00Z",3],["2026-04-02T15:18:00Z",1],["2026-04-02T15:19:00Z",2],["2026-04-02T15:20:00Z",4],["2026-04-02T15:21:00Z",3],["2026-04-02T15:22:00Z",2],["2026-04-02T15:23:00Z",2],["2026-04-02T15:25:00Z",3],["2026-04-02T15:26:00Z",3],["2026-04-02T15:27:00Z",6],["2026-04-02T15:28:00Z",2],["2026-04-02T15:29:00Z",2],["2026-04-02T15:30:00Z",2],["2026-04-02T15:31:00Z",3],["2026-04-02T15:32:00Z",1],["2026-04-02T15:33:00Z",1],["2026-04-02T15:34:00Z",2],["2026-04-02T15:35:00Z",1],["2026-04-02T15:36:00Z",2],["2026-04-02T15:37:00Z",1],["2026-04-02T15:39:00Z",1],["2026-04-02T15:40:00Z",1],["2026-04-02T15:41:00Z",3],["2026-04-02T15:43:00Z",2],["2026-04-02T15:45:00Z",3],["2026-04-02T15:46:00Z",2],["2026-04-02T15:49:00Z",1],["2026-04-02T15:50:00Z",2],["2026-04-02T15:51:00Z",2],["2026-04-02T15:52:00Z",1],["2026-04-02T15:54:00Z",1],["2026-04-02T15:56:00Z",2]],"CTPS_NEW_EMPLOYMENT":[],"CTPS_PORTABILITY":[],"CTPS_PORTABILITY_REFINANCING":[],"CTPS_REFINANCING":[["2026-04-02T15:00:00Z",1],["2026-04-02T15:01:00Z",3],["2026-04-02T15:02:00Z",8],["2026-04-02T15:03:00Z",3],["2026-04-02T15:04:00Z",4],["2026-04-02T15:05:00Z",2],["2026-04-02T15:06:00Z",2],["2026-04-02T15:07:00Z",3],["2026-04-02T15:08:00Z",4],["2026-04-02T15:11:00Z",2],["2026-04-02T15:13:00Z",6],["2026-04-02T15:14:00Z",3],["2026-04-02T15:15:00Z",1],["2026-04-02T15:16:00Z",2],["2026-04-02T15:17:00Z",1],["2026-04-02T15:18:00Z",3],["2026-04-02T15:19:00Z",3],["2026-04-02T15:20:00Z",3],["2026-04-02T15:21:00Z",3],["2026-04-02T15:23:00Z",4],["2026-04-02T15:24:00Z",2],["2026-04-02T15:25:00Z",3],["2026-04-02T15:26:00Z",3],["2026-04-02T15:27:00Z",2],["2026-04-02T15:28:00Z",3],["2026-04-02T15:29:00Z",4],["2026-04-02T15:30:00Z",3],["2026-04-02T15:31:00Z",4],["2026-04-02T15:32:00Z",1],["2026-04-02T15:33:00Z",1],["2026-04-02T15:34:00Z",1],["2026-04-02T15:35:00Z",4],["2026-04-02T15:36:00Z",2],["2026-04-02T15:37:00Z",2],["2026-04-02T15:38:00Z",3],["2026-04-02T15:40:00Z",2],["2026-04-02T15:41:00Z",2],["2026-04-02T15:42:00Z",1],["2026-04-02T15:43:00Z",3],["2026-04-02T15:44:00Z",1],["2026-04-02T15:45:00Z",4],["2026-04-02T15:46:00Z",2],["2026-04-02T15:47:00Z",4],["2026-04-02T15:48:00Z",2],["2026-04-02T15:50:00Z",3],["2026-04-02T15:51:00Z",1],["2026-04-02T15:52:00Z",2],["2026-04-02T15:53:00Z",4],["2026-04-02T15:54:00Z",1],["2026-04-02T15:55:00Z",1],["2026-04-02T15:56:00Z",2],["2026-04-02T15:57:00Z",6],["2026-04-02T15:58:00Z",1],["2026-04-02T15:59:00Z",1]],"CTPS_REFINANCING_OVERDUE":[["2026-04-02T15:21:00Z",1],["2026-04-02T15:35:00Z",1]],"PRIVATE_CTPS_PAYROLL":[["2026-04-02T15:00:00Z",11],["2026-04-02T15:01:00Z",11],["2026-04-02T15:02:00Z",9],["2026-04-02T15:03:00Z",19],["2026-04-02T15:04:00Z",7],["2026-04-02T15:05:00Z",12],["2026-04-02T15:06:00Z",15],["2026-04-02T15:07:00Z",14],["2026-04-02T15:08:00Z",15],["2026-04-02T15:09:00Z",15],["2026-04-02T15:10:00Z",19],["2026-04-02T15:11:00Z",7],["2026-04-02T15:12:00Z",8],["2026-04-02T15:13:00Z",14],["2026-04-02T15:14:00Z",12],["2026-04-02T15:15:00Z",11],["2026-04-02T15:16:00Z",10],["2026-04-02T15:17:00Z",10],["2026-04-02T15:18:00Z",12],["2026-04-02T15:19:00Z",11],["2026-04-02T15:20:00Z",13],["2026-04-02T15:21:00Z",16],["2026-04-02T15:22:00Z",12],["2026-04-02T15:23:00Z",12],["2026-04-02T15:24:00Z",13],["2026-04-02T15:25:00Z",12],["2026-04-02T15:26:00Z",7],["2026-04-02T15:27:00Z",12],["2026-04-02T15:28:00Z",10],["2026-04-02T15:29:00Z",13],["2026-04-02T15:30:00Z",13],["2026-04-02T15:31:00Z",9],["2026-04-02T15:32:00Z",12],["2026-04-02T15:33:00Z",11],["2026-04-02T15:34:00Z",15],["2026-04-02T15:35:00Z",13],["2026-04-02T15:36:00Z",13],["2026-04-02T15:37:00Z",12],["2026-04-02T15:38:00Z",9],["2026-04-02T15:39:00Z",11],["2026-04-02T15:40:00Z",16],["2026-04-02T15:41:00Z",11],["2026-04-02T15:42:00Z",18],["2026-04-02T15:43:00Z",13],["2026-04-02T15:44:00Z",13],["2026-04-02T15:45:00Z",11],["2026-04-02T15:46:00Z",9],["2026-04-02T15:47:00Z",11],["2026-04-02T15:48:00Z",13],["2026-04-02T15:49:00Z",14],["2026-04-02T15:50:00Z",12],["2026-04-02T15:51:00Z",10],["2026-04-02T15:52:00Z",7],["2026-04-02T15:53:00Z",13],["2026-04-02T15:54:00Z",14],["2026-04-02T15:55:00Z",12],["2026-04-02T15:56:00Z",6],["2026-04-02T15:57:00Z",10],["2026-04-02T15:58:00Z",13],["2026-04-02T15:59:00Z",3],["2026-04-02T16:00:00Z",1]]}, "v2":{"CTPS_DEBT_SETTLE":{"BALANCE_REGISTRATION":[],"CREATE_CONTRACT":[],"LIQUIDATE_PROPOSAL":[],"REQUEST_CTPS_CONSENT_TERM":[]},"CTPS_NEW_EMPLOYMENT":{"BALANCE_REGISTRATION":[],"CREATE_CONTRACT":[],"LIQUIDATE_PROPOSAL":[],"REQUEST_CTPS_CONSENT_TERM":[]},"CTPS_PORTABILITY":{"BALANCE_REGISTRATION":[],"CREATE_CONTRACT":[],"LIQUIDATE_PROPOSAL":[],"REQUEST_CTPS_CONSENT_TERM":[]},"CTPS_PORTABILITY_REFINANCING":{"BALANCE_REGISTRATION":[],"CREATE_CONTRACT":[],"LIQUIDATE_PROPOSAL":[],"REQUEST_CTPS_CONSENT_TERM":[]},"CTPS_REFINANCING":{"BALANCE_REGISTRATION":[],"CREATE_CONTRACT":[],"LIQUIDATE_PROPOSAL":[],"REQUEST_CTPS_CONSENT_TERM":[]},"CTPS_REFINANCING_OVERDUE":{"BALANCE_REGISTRATION":[],"CREATE_CONTRACT":[],"LIQUIDATE_PROPOSAL":[],"REQUEST_CTPS_CONSENT_TERM":[]},"PRIVATE_CTPS_PAYROLL":{"BALANCE_REGISTRATION":[["2026-04-02T15:49:00Z",1],["2026-04-02T15:59:00Z",2],["2026-04-02T16:00:00Z",1]],"CREATE_CONTRACT":[],"LIQUIDATE_PROPOSAL":[],"REQUEST_CTPS_CONSENT_TERM":[]}} }};
+const CL_LIST = ["CTPS_DEBT_SETTLE","CTPS_NEW_EMPLOYMENT","CTPS_PORTABILITY","CTPS_PORTABILITY_REFINANCING","CTPS_REFINANCING","CTPS_REFINANCING_OVERDUE","PRIVATE_CTPS_PAYROLL"];
+const STEPS   = ["BALANCE_REGISTRATION","CREATE_CONTRACT","LIQUIDATE_PROPOSAL","REQUEST_CTPS_CONSENT_TERM"];
+const COLORS  = ['#21C25E','#F5A623','#A855F7','#2563EB','#EF4444','#06B6D4','#F97316','#84CC16','#EC4899','#14B8A6'];
+const CL_LABEL = {
+  'CTPS_DEBT_SETTLE':         'QUITACAO DE DIVIDAS',
+  'CTPS_REFINANCING':         'REFINANCIAMENTO',
+  'CTPS_REFINANCING_OVERDUE': 'REFINANCIAMENTO EM ATRASO',
+  'PRIVATE_CTPS_PAYROLL':     'MARGEM LIVRE',
+  'ALL':                      'TODAS'
+};
+
+let activeCL = 'ALL';
+const charts = {};
+
+function getCLs() { return activeCL==='ALL' ? CL_LIST : [activeCL]; }
+
+function fmtTs(ts, unit) {
+  const d = new Date(ts);
+  if (unit==='day')  return d.toLocaleDateString('pt-BR',{weekday:'short',day:'2-digit',month:'2-digit'});
+  return d.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+}
+
+function aggV1(period) {
+  const byTs = {};
+  getCLs().forEach(cl => { (DATA[period].v1[cl]||[]).forEach(([ts,v])=>{ byTs[ts]=(byTs[ts]||0)+v; }); });
+  const sorted = Object.entries(byTs).sort((a,b)=>a[0]<b[0]?-1:1);
+  return { tss:sorted.map(r=>r[0]), vals:sorted.map(r=>r[1]) };
+}
+
+function aggV2(period) {
+  const byST = {};
+  getCLs().forEach(cl => {
+    const clD = DATA[period].v2[cl]||{};
+    Object.entries(clD).forEach(([step,rows])=>{
+      if(!byST[step]) byST[step]={};
+      rows.forEach(([ts,v])=>{ byST[step][ts]=(byST[step][ts]||0)+v; });
+    });
+  });
+  return byST;
+}
+
+function allTs(byST) {
+  const s=new Set();
+  Object.values(byST).forEach(m=>Object.keys(m).forEach(t=>s.add(t)));
+  return [...s].sort();
+}
+
+// -- Chart V1
+function renderV1(canvasId, totalId, subId, period, unit, tickEvery) {
+  const {tss,vals} = aggV1(period);
+  const peak  = vals.length ? Math.max(...vals) : 0;
+  const total = vals.reduce((a,b)=>a+b,0);
+  const labels = tss.map(ts=>fmtTs(ts,unit));
+  const tickL  = labels.map((l,i)=>i%tickEvery===0?l:'');
+
+  document.getElementById(totalId).textContent = total.toLocaleString('pt-BR');
+  document.getElementById(subId).textContent   = CL_LABEL[activeCL] || activeCL;
+
+  if(charts[canvasId]) charts[canvasId].destroy();
+  charts[canvasId] = new Chart(document.getElementById(canvasId).getContext('2d'),{
+    type:'bar',
+    data:{labels:tickL,datasets:[{
+      data:vals,
+      backgroundColor:vals.map((v,i)=>v===peak?'rgba(245,166,35,.9)':i>=vals.length-1?'rgba(33,194,94,.85)':'rgba(33,194,94,.4)'),
+      borderColor:    vals.map((v,i)=>v===peak?'#F5A623':i>=vals.length-1?'#21C25E':'rgba(33,194,94,.55)'),
+      borderWidth:1,borderRadius:3,borderSkipped:false
+    }]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},tooltip:{
+        backgroundColor:'rgba(10,14,26,.95)',borderColor:'rgba(255,255,255,.1)',borderWidth:1,
+        titleColor:'#8B8FA3',bodyColor:'#F0F0F5',titleFont:{size:10},bodyFont:{size:12,weight:'bold'},
+        callbacks:{title:i=>labels[i[0].dataIndex],label:i=>' '+i.raw.toLocaleString('pt-BR')+' contratos'}
+      }},
+      scales:{
+        x:{grid:{display:false},border:{display:false},ticks:{color:'#4B5068',font:{size:9}}},
+        y:{grid:{color:'rgba(255,255,255,.04)'},border:{display:false},ticks:{color:'#8B8FA3',font:{size:9},padding:4},beginAtZero:true}
+      },animation:{duration:300}}
+  });
+}
+
+// -- Chart V2
+function renderV2(canvasId, legId, subId, period, unit, tickEvery) {
+  const byST   = aggV2(period);
+  const ats    = allTs(byST);
+  const labels = ats.map(ts=>fmtTs(ts,unit));
+  const tickL  = labels.map((l,i)=>i%tickEvery===0?l:'');
+  const active = STEPS.filter(st=>Object.keys(byST[st]||{}).length>0);
+  const total  = active.reduce((s,st)=>s+Object.values(byST[st]).reduce((a,b)=>a+b,0),0);
+  document.getElementById(subId).textContent = (CL_LABEL[activeCL]||activeCL)+' · Total: '+total.toLocaleString('pt-BR');
+
+  const datasets = active.map((step,i)=>({
+    label:step,
+    data:ats.map(ts=>(byST[step]||{})[ts]||0),
+    backgroundColor:COLORS[i%COLORS.length]+'99',
+    borderColor:COLORS[i%COLORS.length],
+    borderWidth:1,borderRadius:2,borderSkipped:false
+  }));
+
+  if(charts[canvasId]) charts[canvasId].destroy();
+  charts[canvasId] = new Chart(document.getElementById(canvasId).getContext('2d'),{
+    type:'bar',
+    data:{labels:tickL,datasets},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},tooltip:{
+        mode:'index',intersect:false,
+        backgroundColor:'rgba(10,14,26,.95)',borderColor:'rgba(255,255,255,.1)',borderWidth:1,
+        titleColor:'#8B8FA3',bodyColor:'#F0F0F5',titleFont:{size:10},bodyFont:{size:11},
+        callbacks:{title:i=>labels[i[0]?.dataIndex??0]}
+      }},
+      scales:{
+        x:{stacked:true,grid:{display:false},border:{display:false},ticks:{color:'#4B5068',font:{size:9}}},
+        y:{stacked:true,grid:{color:'rgba(255,255,255,.04)'},border:{display:false},ticks:{color:'#8B8FA3',font:{size:9},padding:4},beginAtZero:true}
+      },animation:{duration:300}}
+  });
+
+  document.getElementById(legId).innerHTML = datasets.map(ds=>
+    `<div class="legend-item"><div class="legend-dot" style="background:${ds.borderColor}"></div>${ds.label}</div>`
+  ).join('');
+}
+
+// -- KPIs globais
+function updateKPIs() {
+  const {vals:vS} = aggV1('semana');
+  const {vals:vD} = aggV1('dia');
+  const {vals:v6} = aggV1('sessenta');
+
+  const totalS = vS.reduce((a,b)=>a+b,0);
+  const totalD = vD.reduce((a,b)=>a+b,0);
+  const total6 = v6.reduce((a,b)=>a+b,0);
+  const peakD  = vD.length ? Math.max(...vD) : 0;
+  const avgD   = vD.length ? (totalD/vD.length).toFixed(1) : '0';
+
+  const byST = aggV2('sessenta');
+  const ats  = allTs(byST);
+  const last = ats[ats.length-1];
+  const pend = last ? STEPS.reduce((s,st)=>s+(byST[st]?.[last]||0),0) : 0;
+
+  document.getElementById('g-kpi1').textContent = totalS.toLocaleString('pt-BR');
+  document.getElementById('g-kpi2').textContent = totalD.toLocaleString('pt-BR');
+  document.getElementById('g-kpi3').textContent = total6.toLocaleString('pt-BR');
+  document.getElementById('g-kpi4').textContent = peakD.toLocaleString('pt-BR');
+  document.getElementById('g-kpi5').textContent = avgD;
+  document.getElementById('g-kpi6').textContent = pend;
+}
+
+// -- Renderizar tudo
+function renderAll() {
+  updateKPIs();
+  renderV1('v1-semana','v1-semana-total','v1-semana-sub','semana','day',   1);
+  renderV1('v1-dia',   'v1-dia-total',   'v1-dia-sub',  'dia',  'hour',  2);
+  renderV1('v1-60m',   'v1-60m-total',   'v1-60m-sub',  'sessenta','minute',10);
+  renderV2('v2-semana','leg-semana','v2-semana-sub','semana','day',   1);
+  renderV2('v2-dia',   'leg-dia',  'v2-dia-sub',  'dia',  'hour',  2);
+  renderV2('v2-60m',   'leg-60m',  'v2-60m-sub',  'sessenta','minute',10);
+}
+
+// -- Filtro
+document.querySelector('.filter-bar').addEventListener('click', e=>{
+  const chip = e.target.closest('.chip');
+  if(!chip) return;
+  document.querySelectorAll('.filter-bar .chip').forEach(c=>c.classList.remove('active'));
+  chip.classList.add('active');
+  activeCL = chip.dataset.value;
+  renderAll();
+});
+
+renderAll();
+
+// Auto-reload a cada 5 minutos para pegar dados novos do anexo
+setTimeout(function(){
+  window.location.href = window.location.pathname + '?v=' + Date.now();
+}, 5 * 60 * 1000);
+</script>
+</body>
+</html>
